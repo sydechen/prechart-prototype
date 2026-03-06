@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PreChart · Pre-Encounter Briefing</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eceae5;
+    --surface: #faf9f7;
+    --surface2: #f0ede8;
+    --border: #ddd9d2;
+    --border-strong: #b8b3aa;
+    --text-primary: #1a1816;
+    --text-secondary: #5a554e;
+    --text-muted: #8a857c;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+
+  /* ─── EHR CHROME ─── */
+  .ehr-topbar {
+    background: #1e2b3a;
+    color: #c8d4e0;
+    padding: 0 20px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #0f1822;
+    position: relative;
+    z-index: 10;
+  }
+  .ehr-logo { color: #fff; font-weight: 500; font-size: 12px; letter-spacing: 0.08em; margin-right: 4px; }
+  .ehr-sep { color: #3a4f66; }
+  .ehr-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+  /* PreChart Alert Badge */
+  .prechart-alert {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #3b5bdb, #5c7cfa);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 5px 13px 5px 9px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 12px rgba(59,91,219,0.45);
+    animation: alertPulse 2.8s ease-in-out 3;
+  }
+  .prechart-alert:hover {
+    background: linear-gradient(135deg, #4c6ef5, #74c0fc);
+    box-shadow: 0 3px 16px rgba(59,91,219,0.55);
+    transform: translateY(-1px);
+  }
+  .prechart-alert.open {
+    background: linear-gradient(135deg, #2f4ac0, #4c6ef5);
+    box-shadow: 0 2px 8px rgba(59,91,219,0.3);
+    animation: none;
+  }
+  @keyframes alertPulse {
+    0%, 100% { box-shadow: 0 2px 12px rgba(59,91,219,0.45); }
+    50%       { box-shadow: 0 2px 24px rgba(59,91,219,0.75), 0 0 0 4px rgba(92,124,250,0.2); }
+  }
+  .alert-dot {
+    width: 8px; height: 8px;
+    background: #ffd43b;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(255,212,59,0.35);
+    animation: dotBlink 1.8s ease-in-out 5;
+  }
+  @keyframes dotBlink {
+    0%,100% { opacity: 1; } 50% { opacity: 0.25; }
+  }
+  .alert-count {
+    background: rgba(255,255,255,0.25);
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    margin-left: 1px;
+  }
+  .alert-caret { font-size: 9px; opacity: 0.7; margin-left: 2px; transition: transform 0.2s; }
+  .prechart-alert.open .alert-caret { transform: rotate(180deg); }
+
+  .ehr-nav {
+    background: #253447;
+    padding: 0 20px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    border-bottom: 1px solid #1a2838;
+    position: relative;
+    z-index: 9;
+  }
+  .ehr-nav-tab {
+    padding: 0 14px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #7a94aa;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    letter-spacing: 0.04em;
+  }
+  .ehr-nav-tab.active { color: #e8f0f8; border-bottom-color: #4a9eda; }
+
+  /* PATIENT HEADER */
+  .patient-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 11px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    z-index: 8;
+  }
+  .patient-avatar {
+    width: 42px; height: 42px;
+    background: #d0c8be;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: #5a554e;
+    flex-shrink: 0;
+  }
+  .patient-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .patient-meta { display: flex; gap: 16px; margin-top: 3px; flex-wrap: wrap; }
+  .meta-chip { font-family: var(--mono); font-size: 11px; color: var(--text-secondary); }
+  .meta-chip span { color: var(--text-muted); margin-right: 4px; }
+  .encounter-badge {
+    margin-left: auto;
+    background: #eef4fb;
+    border: 1px solid #b8d0e8;
+    border-radius: 4px;
+    padding: 6px 14px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .enc-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .enc-time { font-size: 13px; font-weight: 500; color: #2c5f8a; margin-top: 1px; }
+
+  /* MAIN LAYOUT */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    height: calc(100vh - 42px - 36px - 64px);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* LEFT PANEL */
+  .chart-panel {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .chart-panel::-webkit-scrollbar { width: 4px; }
+  .chart-panel::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  .chart-section { border-bottom: 1px solid var(--border); }
+  .chart-section-header {
+    padding: 9px 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .chart-section-header:hover { background: var(--border); }
+  .chart-section-body { padding: 10px 16px; }
+  .chart-section.collapsed .chart-section-body { display: none; }
+
+  .dx-item { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .dx-item:last-child { border-bottom: none; }
+  .dx-code { font-family: var(--mono); font-size: 10px; color: var(--text-muted); background: var(--surface2); padding: 2px 5px; border-radius: 2px; flex-shrink: 0; margin-top: 1px; }
+  .dx-name { font-size: 12px; line-height: 1.4; }
+  .dx-since { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+
+  .med-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 5px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+  .med-item:last-child { border-bottom: none; }
+  .med-name { font-size: 12px; font-weight: 500; }
+  .med-dose { font-size: 11px; color: var(--text-secondary); }
+  .med-flag { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; flex-shrink: 0; border: 1px solid; }
+  .med-flag.warn { color: #b7620a; background: #fdf6ee; border-color: #e8d0a8; }
+  .med-flag.ok { color: #1a6b3c; background: #f0f7f3; border-color: #a8d4b8; }
+
+  .lab-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+  .lab-row:last-child { border-bottom: none; }
+  .lab-name { font-size: 12px; flex: 1; }
+  .lab-val { font-family: var(--mono); font-size: 12px; font-weight: 500; text-align: right; }
+  .lab-val.high { color: #c0392b; }
+  .lab-val.borderline { color: #b7620a; }
+  .lab-val.normal { color: #1a6b3c; }
+  .lab-date { font-family: var(--mono); font-size: 10px; color: var(--text-muted); text-align: right; min-width: 64px; }
+
+  .vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .vital-cell { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 7px 10px; }
+  .vital-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+  .vital-value { font-family: var(--mono); font-size: 14px; font-weight: 500; }
+  .vital-value.high { color: #c0392b; }
+  .vital-value.borderline { color: #b7620a; }
+  .vital-date { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  .sdoh-item { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .sdoh-item:last-child { border-bottom: none; }
+  .sdoh-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .sdoh-dot.concern { background: #b7620a; }
+  .sdoh-dot.flag { background: #c0392b; }
+  .sdoh-dot.ok { background: #1a6b3c; }
+  .sdoh-text { font-size: 12px; line-height: 1.4; }
+  .sdoh-source { font-size: 10px; color: var(--text-muted); font-family: var(--mono); }
+
+  .q-item { padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .q-item:last-child { border-bottom: none; }
+  .q-question { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+  .q-answer { font-size: 12px; font-weight: 500; }
+  .q-answer.flag { color: #c0392b; }
+  .q-answer.concern { color: #b7620a; }
+
+  .claims-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; align-items: center; gap: 8px; }
+  .claims-item:last-child { border-bottom: none; }
+  .claims-date { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+  .claims-gap { font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 2px; white-space: nowrap; }
+  .claims-gap.overdue { background: #fdf2f1; color: #c0392b; }
+  .claims-gap.due { background: #fdf6ee; color: #b7620a; }
+  .claims-gap.current { background: #f0f7f3; color: #1a6b3c; }
+
+  /* RIGHT — chart placeholder */
+  .chart-main {
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .chart-main-hint {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.4;
+  }
+  .chart-main-hint-icon { font-size: 32px; }
+
+  /* ══════════════════════════════════════
+     POPOVER
+  ══════════════════════════════════════ */
+  .popover-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(10,18,30,0.08);
+  }
+  .popover-overlay.visible { display: block; }
+
+  .popover {
+    position: fixed;
+    top: 50px;
+    right: 16px;
+    width: 448px;
+    max-height: calc(100vh - 66px);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,0.04),
+      0 16px 48px rgba(59,91,219,0.18),
+      0 0 0 1px rgba(59,91,219,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform-origin: top right;
+    animation: popIn 0.24s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 101;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.88) translateY(-10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .popover.closing {
+    animation: popOut 0.16s ease-in forwards;
+  }
+  @keyframes popOut {
+    to { opacity: 0; transform: scale(0.9) translateY(-8px); }
+  }
+
+  /* Tail pointing toward badge */
+  .popover-tail {
+    position: absolute;
+    top: -9px;
+    right: 58px;
+    width: 18px;
+    height: 9px;
+    overflow: visible;
+  }
+  .popover-tail::before,
+  .popover-tail::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+  .popover-tail::before {
+    top: -1px;
+    border-width: 0 9px 10px 9px;
+    border-color: transparent transparent rgba(59,91,219,0.15) transparent;
+  }
+  .popover-tail::after {
+    top: 1px;
+    border-width: 0 9px 9px 9px;
+    border-color: transparent transparent #3b5bdb transparent;
+  }
+
+  /* Popover header */
+  .popover-header {
+    background: linear-gradient(135deg, #3b5bdb 0%, #5c7cfa 60%, #74c0fc 100%);
+    padding: 14px 16px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .popover-brand { display: flex; align-items: center; gap: 10px; }
+  .popover-brand-icon {
+    width: 30px; height: 30px;
+    background: rgba(255,255,255,0.22);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .popover-brand-name { font-weight: 700; font-size: 14px; color: #fff; letter-spacing: -0.01em; }
+  .popover-brand-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .popover-header-right { display: flex; align-items: center; gap: 8px; }
+
+  .reanalyze-btn {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reanalyze-btn:hover { background: rgba(255,255,255,0.28); }
+  .reanalyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .close-btn {
+    width: 26px; height: 26px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.32); }
+
+  /* Popover body */
+  .popover-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 12px 14px 18px;
+    background: #f4f5ff;
+  }
+  .popover-body::-webkit-scrollbar { width: 5px; }
+  .popover-body::-webkit-scrollbar-thumb { background: #c5cde8; border-radius: 99px; }
+
+  /* Loading */
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 52px 20px;
+    gap: 14px;
+    text-align: center;
+  }
+  .loading-orb {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b5bdb, #74c0fc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    animation: orbPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes orbPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(59,91,219,0.4); }
+    70%  { box-shadow: 0 0 0 14px rgba(59,91,219,0); }
+    100% { box-shadow: 0 0 0 0 rgba(59,91,219,0); }
+  }
+  .loading-title { font-size: 14px; font-weight: 600; color: #1a1f3c; }
+  .loading-sub { font-size: 12px; color: #7c86aa; max-width: 210px; line-height: 1.5; }
+
+  /* Narrative */
+  .narrative-block {
+    background: #fff;
+    border-radius: 12px;
+    padding: 11px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(59,91,219,0.07);
+    position: relative;
+    overflow: hidden;
+  }
+  .narrative-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b5bdb, #74c0fc);
+  }
+  .narrative-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #3b5bdb;
+    margin-bottom: 7px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ai-pill {
+    background: linear-gradient(135deg, #3b5bdb, #5c7cfa);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    padding: 2px 7px;
+    border-radius: 99px;
+  }
+  .narrative-text { font-size: 12.5px; line-height: 1.65; color: #2d3250; }
+
+  /* Concerns */
+  .concern-section { margin-bottom: 8px; }
+  .section-label-sm {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #5c6785;
+    margin-bottom: 7px;
+  }
+  .concern-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .concern-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid #dde3f8;
+    border-radius: 99px;
+    padding: 4px 12px 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2d3250;
+    box-shadow: 0 1px 2px rgba(59,91,219,0.06);
+  }
+  .concern-dot { width: 7px; height: 7px; border-radius: 50%; background: #5c7cfa; flex-shrink: 0; }
+
+  /* Section divider */
+  .section-divider {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #5c6785;
+    margin: 10px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-divider::after { content: ''; flex: 1; height: 1px; background: #dde3f8; }
+
+  /* ── Compact expandable cards ── */
+  .priority-card {
+    background: #fff;
+    border: 1.5px solid #e8ecf8;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(59,91,219,0.05);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.18s;
+  }
+  .priority-card:hover { box-shadow: 0 3px 12px rgba(59,91,219,0.1); }
+  .priority-card.urgent { border-color: #ffc9c9; }
+  .priority-card.warn   { border-color: #ffd8a8; }
+  .priority-card.info   { border-color: #a5d8ff; }
+
+  /* Collapsed row — always visible */
+  .card-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 44px;
+  }
+  .card-row:hover { background: #fafbff; }
+
+  /* Priority stripe on left edge */
+  .card-stripe {
+    width: 4px;
+    border-radius: 99px;
+    align-self: stretch;
+    flex-shrink: 0;
+    min-height: 26px;
+  }
+  .priority-card.urgent .card-stripe { background: linear-gradient(180deg,#e03131,#fa5252); }
+  .priority-card.warn   .card-stripe { background: linear-gradient(180deg,#e67700,#ffa94d); }
+  .priority-card.info   .card-stripe { background: linear-gradient(180deg,#1971c2,#4dabf7); }
+
+  .card-row-icon { font-size: 15px; flex-shrink: 0; line-height: 1; }
+
+  .card-row-main { flex: 1; min-width: 0; }
+  .card-row-title {
+    font-weight: 600;
+    font-size: 12.5px;
+    color: #1a1f3c;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-row-snippet {
+    font-size: 11px;
+    color: #6c7aae;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-row-right { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+
+  .card-category {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 99px;
+    flex-shrink: 0; border: 1.5px solid; white-space: nowrap;
+  }
+  .card-category.urgent { color: #c92a2a; background: #fff5f5; border-color: #ffc9c9; }
+  .card-category.warn   { color: #d9480f; background: #fff4e6; border-color: #ffd8a8; }
+  .card-category.info   { color: #1864ab; background: #e7f5ff; border-color: #a5d8ff; }
+
+  /* Inline action buttons on collapsed row — only show 1st action */
+  .card-quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    flex-shrink: 0;
+  }
+  .card-quick-action.order   { color: #fff; background: #1971c2; box-shadow: 0 2px 5px rgba(25,113,194,0.3); }
+  .card-quick-action.rx      { color: #fff; background: #2f9e44; box-shadow: 0 2px 5px rgba(47,158,68,0.3); }
+  .card-quick-action.refer   { color: #fff; background: #7048e8; box-shadow: 0 2px 5px rgba(112,72,232,0.3); }
+  .card-quick-action.flag    { color: #fff; background: #e03131; box-shadow: 0 2px 5px rgba(224,49,49,0.3); }
+  .card-quick-action.schedule{ color: #fff; background: #e67700; box-shadow: 0 2px 5px rgba(230,119,0,0.3); }
+  .card-quick-action:hover   { filter: brightness(1.1); transform: translateY(-1px); }
+  .card-quick-action.sent    { opacity: 0.4; pointer-events: none; text-decoration: line-through; box-shadow: none; }
+
+  .card-chevron {
+    font-size: 10px;
+    color: #9aa0bc;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .priority-card.expanded .card-chevron { transform: rotate(180deg); }
+
+  /* Expanded detail panel */
+  .card-detail {
+    display: none;
+    border-top: 1px solid #eef0f8;
+    padding: 12px 14px 13px 30px; /* indent to align under title */
+    background: #fafbff;
+  }
+  .priority-card.expanded .card-detail { display: block; animation: detailSlide 0.18s ease; }
+  @keyframes detailSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-body { font-size: 12px; color: #4a5180; line-height: 1.58; margin-bottom: 10px; }
+
+  .card-rec {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 11.5px;
+    color: #3b5bdb;
+    font-weight: 500;
+    margin-bottom: 10px;
+    line-height: 1.45;
+    background: #eef2ff;
+    padding: 7px 10px;
+    border-radius: 7px;
+  }
+  .card-rec-arrow { flex-shrink: 0; margin-top: 1px; }
+
+  .ehr-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+  .ehr-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--sans);
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+  .ehr-action-btn.order   { color: #fff; background: #1971c2; box-shadow: 0 2px 6px rgba(25,113,194,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.order:hover   { background: #1864ab; box-shadow: 0 3px 10px rgba(25,113,194,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.rx      { color: #fff; background: #2f9e44; box-shadow: 0 2px 6px rgba(47,158,68,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.rx:hover      { background: #2b8a3e; box-shadow: 0 3px 10px rgba(47,158,68,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.refer   { color: #fff; background: #7048e8; box-shadow: 0 2px 6px rgba(112,72,232,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.refer:hover   { background: #6741d9; box-shadow: 0 3px 10px rgba(112,72,232,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.flag    { color: #fff; background: #e03131; box-shadow: 0 2px 6px rgba(224,49,49,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.flag:hover    { background: #c92a2a; box-shadow: 0 3px 10px rgba(224,49,49,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.schedule { color: #fff; background: #e67700; box-shadow: 0 2px 6px rgba(230,119,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.schedule:hover { background: #d9480f; box-shadow: 0 3px 10px rgba(230,119,0,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.sent {
+    opacity: 0.45; cursor: default; text-decoration: line-through;
+    pointer-events: none; box-shadow: none; transform: none;
+  }
+
+  /* References toggle link */
+  .ref-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c7aae;
+    cursor: pointer;
+    margin-top: 8px;
+    padding: 3px 0;
+    background: none;
+    border: none;
+    font-family: var(--sans);
+    transition: color 0.15s;
+    text-decoration: none;
+  }
+  .ref-toggle:hover { color: #3b5bdb; }
+  .ref-toggle-arrow { font-size: 9px; transition: transform 0.2s; }
+  .ref-toggle.open .ref-toggle-arrow { transform: rotate(180deg); }
+
+  /* References drawer */
+  .ref-drawer {
+    display: none;
+    margin-top: 10px;
+    background: #f8f9ff;
+    border: 1px solid #e0e4f5;
+    border-radius: 9px;
+    padding: 12px 14px;
+  }
+  .ref-drawer.open { display: block; animation: drawerSlide 0.18s ease; }
+  @keyframes drawerSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .ref-list { list-style: none; margin-bottom: 0; }
+  .ref-item {
+    display: flex;
+    gap: 9px;
+    padding: 7px 0;
+    border-bottom: 1px solid #e8ecf5;
+    align-items: flex-start;
+  }
+  .ref-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .ref-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    background: #5c7cfa;
+    border-radius: 4px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    line-height: 1.6;
+  }
+  .ref-body { flex: 1; }
+  .ref-title { font-size: 12px; font-weight: 600; color: #1a1f3c; line-height: 1.35; }
+  .ref-meta { font-size: 11px; color: #6c7aae; margin-top: 2px; }
+  .ref-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 99px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .ref-tag.guideline { background: #e7f5ff; color: #1864ab; }
+  .ref-tag.rct       { background: #ebfbee; color: #2b8a3e; }
+  .ref-tag.meta      { background: #f8f0ff; color: #7048e8; }
+  .ref-tag.cohort    { background: #fff4e6; color: #d9480f; }
+
+  /* Pathway button */
+  .pathway-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #3b5bdb;
+    background: #eef2ff;
+    border: 1.5px solid #c5d0fa;
+    border-radius: 7px;
+    padding: 4px 10px;
+    cursor: pointer;
+    margin-top: 6px;
+    margin-left: 2px;
+    font-family: var(--sans);
+    transition: all 0.15s;
+    box-shadow: 0 1px 4px rgba(59,91,219,0.12);
+  }
+  .pathway-btn:hover { background: #e0e7ff; box-shadow: 0 2px 8px rgba(59,91,219,0.22); transform: translateY(-1px); }
+
+  /* ── PATHWAY MODAL ── */
+  .pathway-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,15,40,0.55);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .pathway-modal-overlay.visible { display: flex; }
+
+  .pathway-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 760px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.22), 0 0 0 1px rgba(59,91,219,0.1);
+    animation: modalIn 0.22s cubic-bezier(0.34,1.4,0.64,1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .pathway-modal-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid #eef0f8;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .pathway-modal-title { font-size: 15px; font-weight: 700; color: #1a1f3c; }
+  .pathway-modal-sub { font-size: 12px; color: #6c7aae; margin-top: 3px; }
+  .pathway-modal-close {
+    width: 30px; height: 30px;
+    background: #f4f5ff;
+    border: 1.5px solid #e0e4f5;
+    border-radius: 50%;
+    color: #5c6785;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .pathway-modal-close:hover { background: #e8ecff; color: #1a1f3c; }
+
+  .pathway-legend {
+    padding: 10px 20px;
+    border-bottom: 1px solid #eef0f8;
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+    background: #fafbff;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #5c6785; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+  .legend-dot.applied    { background: #3b5bdb; }
+  .legend-dot.not-taken  { background: #e8ecf5; border: 1.5px solid #c5cde8; }
+  .legend-dot.outcome    { background: #2f9e44; }
+  .legend-dot.warning    { background: #e03131; }
+
+  .pathway-canvas-wrap {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    background: #f8f9ff;
+  }
+  .pathway-canvas-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+  .pathway-canvas-wrap::-webkit-scrollbar-thumb { background: #c5cde8; border-radius: 99px; }
+
+  canvas#pathwayCanvas { display: block; }
+
+
+  /* EHR toast */
+  .ehr-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: #1a1f3c;
+    color: #e8ecff;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 99px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s, transform 0.22s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .ehr-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Error */
+  .error-state {
+    background: #fff5f5;
+    border: 1.5px solid #ffc9c9;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #c92a2a;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+
+<!-- EHR Top Bar -->
+<div class="ehr-topbar">
+  <span class="ehr-logo">NEXUS EHR</span>
+  <span class="ehr-sep">|</span>
+  <span>Dr. Sarah Chen, MD</span>
+  <span class="ehr-sep">·</span>
+  <span>Riverside Family Medicine</span>
+  <span class="ehr-sep">·</span>
+  <span>Thu Mar 5, 2026</span>
+  <div class="ehr-topbar-right">
+    <div class="prechart-alert" id="preChartBadge" onclick="togglePreChart()">
+      <span class="alert-dot"></span>
+      PreChart
+      <span class="alert-count" id="alertCount">!</span>
+      <span class="alert-caret" id="alertCaret">▼</span>
+    </div>
+  </div>
+</div>
+
+<!-- EHR Nav -->
+<div class="ehr-nav">
+  <div class="ehr-nav-tab">SCHEDULE</div>
+  <div class="ehr-nav-tab active">CHART</div>
+  <div class="ehr-nav-tab">ORDERS</div>
+  <div class="ehr-nav-tab">MESSAGES</div>
+  <div class="ehr-nav-tab">RESULTS</div>
+  <div class="ehr-nav-tab">BILLING</div>
+</div>
+
+<!-- Patient Header -->
+<div class="patient-header">
+  <div class="patient-avatar">MR</div>
+  <div>
+    <div class="patient-name">Martinez, Robert A.</div>
+    <div class="patient-meta">
+      <span class="meta-chip"><span>DOB</span>03/14/1961 (64 y/o)</span>
+      <span class="meta-chip"><span>MRN</span>004-821-7734</span>
+      <span class="meta-chip"><span>PCP</span>Dr. S. Chen</span>
+      <span class="meta-chip"><span>INS</span>BlueCross PPO</span>
+    </div>
+  </div>
+  <div class="encounter-badge">
+    <div class="enc-label">Today's Encounter</div>
+    <div class="enc-time">2:30 PM · Annual Wellness Visit</div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- Left: Chart data -->
+  <div class="chart-panel">
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Active Problem List <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="dx-item"><span class="dx-code">E11.9</span><div><div class="dx-name">Type 2 Diabetes Mellitus</div><div class="dx-since">Since 2018 · Poorly controlled</div></div></div>
+        <div class="dx-item"><span class="dx-code">I10</span><div><div class="dx-name">Essential Hypertension</div><div class="dx-since">Since 2015</div></div></div>
+        <div class="dx-item"><span class="dx-code">E78.5</span><div><div class="dx-name">Hyperlipidemia, Mixed</div><div class="dx-since">Since 2016</div></div></div>
+        <div class="dx-item"><span class="dx-code">F32.1</span><div><div class="dx-name">Major Depressive Disorder, Moderate</div><div class="dx-since">Since 2022 · Partially treated</div></div></div>
+        <div class="dx-item"><span class="dx-code">M54.5</span><div><div class="dx-name">Low Back Pain, Chronic</div><div class="dx-since">Since 2020</div></div></div>
+        <div class="dx-item"><span class="dx-code">Z87.891</span><div><div class="dx-name">Hx: Tobacco Use (quit 2019)</div><div class="dx-since">40 pack-year history</div></div></div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Current Medications <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="med-item"><div><div class="med-name">Metformin 1000mg</div><div class="med-dose">PO BID · Last refill: Oct 2025</div></div><span class="med-flag warn">OVERDUE</span></div>
+        <div class="med-item"><div><div class="med-name">Lisinopril 10mg</div><div class="med-dose">PO QD · Active</div></div><span class="med-flag ok">CURRENT</span></div>
+        <div class="med-item"><div><div class="med-name">Atorvastatin 40mg</div><div class="med-dose">PO QHS · Active</div></div><span class="med-flag ok">CURRENT</span></div>
+        <div class="med-item"><div><div class="med-name">Sertraline 50mg</div><div class="med-dose">PO QD · Prescribed Apr 2022</div></div><span class="med-flag warn">NO REFILL</span></div>
+        <div class="med-item"><div><div class="med-name">Aspirin 81mg</div><div class="med-dose">PO QD · OTC</div></div><span class="med-flag ok">CURRENT</span></div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Recent Labs <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="lab-row"><div class="lab-name">HbA1c</div><div class="lab-val high">9.2%</div><div class="lab-date">Jan 2026</div></div>
+        <div class="lab-row"><div class="lab-name">Fasting Glucose</div><div class="lab-val high">214 mg/dL</div><div class="lab-date">Jan 2026</div></div>
+        <div class="lab-row"><div class="lab-name">LDL Cholesterol</div><div class="lab-val borderline">118 mg/dL</div><div class="lab-date">Jan 2026</div></div>
+        <div class="lab-row"><div class="lab-name">eGFR</div><div class="lab-val borderline">58 mL/min</div><div class="lab-date">Jan 2026</div></div>
+        <div class="lab-row"><div class="lab-name">Urine Alb/Cr Ratio</div><div class="lab-val high">52 mg/g</div><div class="lab-date">Jan 2026</div></div>
+        <div class="lab-row"><div class="lab-name">TSH</div><div class="lab-val normal">2.1 mIU/L</div><div class="lab-date">Jan 2026</div></div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Vitals (Most Recent) <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="vitals-grid">
+          <div class="vital-cell"><div class="vital-label">Blood Pressure</div><div class="vital-value high">152/94</div><div class="vital-date">Feb 12, 2026</div></div>
+          <div class="vital-cell"><div class="vital-label">Heart Rate</div><div class="vital-value">78 bpm</div><div class="vital-date">Feb 12, 2026</div></div>
+          <div class="vital-cell"><div class="vital-label">BMI</div><div class="vital-value borderline">31.4</div><div class="vital-date">Feb 12, 2026</div></div>
+          <div class="vital-cell"><div class="vital-label">Weight</div><div class="vital-value">212 lbs</div><div class="vital-date">Feb 12, 2026</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Pre-Visit Questionnaire <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="q-item"><div class="q-question">PHQ-9 Score (completed today)</div><div class="q-answer flag">14 / 27 — Moderate Depression</div></div>
+        <div class="q-item"><div class="q-question">Reason for visit</div><div class="q-answer">"Back pain getting worse, want to talk about my sugar"</div></div>
+        <div class="q-item"><div class="q-question">Medication adherence</div><div class="q-answer concern">"I forget my metformin most days"</div></div>
+        <div class="q-item"><div class="q-question">New symptoms</div><div class="q-answer">"Tingling in my feet"</div></div>
+        <div class="q-item"><div class="q-question">Exercise frequency</div><div class="q-answer concern">Rarely / Never (back pain)</div></div>
+        <div class="q-item"><div class="q-question">Alcohol use</div><div class="q-answer">3–4 drinks/week</div></div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Claims / Care Gaps <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="claims-item"><div>Diabetic Eye Exam</div><div><div class="claims-date">Last: Mar 2023</div><span class="claims-gap overdue">2+ YRS OVERDUE</span></div></div>
+        <div class="claims-item"><div>Colorectal Cancer Screen</div><div><div class="claims-date">Never done</div><span class="claims-gap overdue">NEVER DONE</span></div></div>
+        <div class="claims-item"><div>Diabetic Foot Exam</div><div><div class="claims-date">Last: Jun 2025</div><span class="claims-gap due">DUE</span></div></div>
+        <div class="claims-item"><div>Influenza Vaccine</div><div><div class="claims-date">Last: Oct 2025</div><span class="claims-gap current">CURRENT</span></div></div>
+        <div class="claims-item"><div>Pneumococcal (PPSV23)</div><div><div class="claims-date">Never, age 64 w/ DM</div><span class="claims-gap overdue">INDICATED</span></div></div>
+        <div class="claims-item"><div>Lung Cancer Screen (LDCT)</div><div><div class="claims-date">40 pk-yr, quit 2019</div><span class="claims-gap overdue">NEVER DONE</span></div></div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-section-header" onclick="toggleSection(this)">Social Determinants of Health <span>▾</span></div>
+      <div class="chart-section-body">
+        <div class="sdoh-item"><div class="sdoh-dot flag"></div><div><div class="sdoh-text">Lives alone; limited social support</div><div class="sdoh-source">SDOH screen, Jan 2026</div></div></div>
+        <div class="sdoh-item"><div class="sdoh-dot concern"></div><div><div class="sdoh-text">Food insecurity — sometimes runs short before month end</div><div class="sdoh-source">SDOH screen, Jan 2026</div></div></div>
+        <div class="sdoh-item"><div class="sdoh-dot concern"></div><div><div class="sdoh-text">Transportation barrier to pharmacy</div><div class="sdoh-source">Care coord. note, Nov 2025</div></div></div>
+        <div class="sdoh-item"><div class="sdoh-dot ok"></div><div><div class="sdoh-text">Stable housing; owns home</div><div class="sdoh-source">SDOH screen, Jan 2026</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Chart work area placeholder -->
+  <div class="chart-main">
+    <div class="chart-main-hint">
+      <div class="chart-main-hint-icon">📋</div>
+      <div>SELECT A CHART SECTION</div>
+      <div style="font-size:11px;margin-top:4px">encounter notes · orders · history</div>
+    </div>
+  </div>
+
+</div><!-- end main-layout -->
+
+<!-- ── POPOVER ── -->
+<div class="popover-overlay" id="popoverOverlay" onclick="handleOverlayClick(event)">
+  <div class="popover" id="popover" onclick="event.stopPropagation()">
+    <div class="popover-tail"></div>
+
+    <div class="popover-header">
+      <div class="popover-brand">
+        <div class="popover-brand-icon">🩺</div>
+        <div>
+          <div class="popover-brand-name">PreChart</div>
+          <div class="popover-brand-sub">Pre-Encounter AI Briefing</div>
+        </div>
+      </div>
+      <div class="popover-header-right">
+        <button class="reanalyze-btn" id="reanalyzeBtn" onclick="runAnalysis()">↻ Re-analyze</button>
+        <button class="close-btn" onclick="closePopover()">✕</button>
+      </div>
+    </div>
+
+    <div class="popover-body">
+      <div class="loading-state" id="loadingState">
+        <div class="loading-orb">🩺</div>
+        <div class="loading-title">Analyzing chart…</div>
+        <div class="loading-sub">Reviewing labs, medications, claims, and questionnaire responses</div>
+      </div>
+      <div id="briefingContent" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PATHWAY MODAL ── -->
+<div class="pathway-modal-overlay" id="pathwayOverlay" onclick="closePathway(event)">
+  <div class="pathway-modal" onclick="event.stopPropagation()">
+    <div class="pathway-modal-header">
+      <div>
+        <div class="pathway-modal-title" id="pathwayTitle">Clinical Pathway</div>
+        <div class="pathway-modal-sub" id="pathwaySub">Decision tree · highlighted nodes show patient-specific path</div>
+      </div>
+      <button class="pathway-modal-close" onclick="document.getElementById('pathwayOverlay').classList.remove('visible')">✕</button>
+    </div>
+    <div class="pathway-legend">
+      <div class="legend-item"><div class="legend-dot applied"></div> Applied to this patient</div>
+      <div class="legend-item"><div class="legend-dot not-taken"></div> Not applicable / not taken</div>
+      <div class="legend-item"><div class="legend-dot outcome"></div> Recommended action</div>
+      <div class="legend-item"><div class="legend-dot warning"></div> Risk / alert node</div>
+    </div>
+    <div class="pathway-canvas-wrap">
+      <canvas id="pathwayCanvas" width="720" height="480"></canvas>
+    </div>
+  </div>
+</div>
+
+
+<div class="ehr-toast" id="ehrToast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Action sent to EHR</span>
+</div>
+
+<script>
+  // ── Chart section toggle ──
+  function toggleSection(header) {
+    const section = header.parentElement;
+    const arrow = header.querySelector('span:last-child');
+    section.classList.toggle('collapsed');
+    arrow.textContent = section.classList.contains('collapsed') ? '▸' : '▾';
+  }
+
+  // ── Popover state ──
+  let isOpen = false;
+  let analysisRun = false;
+
+  function togglePreChart() { isOpen ? closePopover() : openPopover(); }
+
+  function openPopover() {
+    isOpen = true;
+    document.getElementById('popoverOverlay').classList.add('visible');
+    document.getElementById('popover').classList.remove('closing');
+    document.getElementById('preChartBadge').classList.add('open');
+    document.getElementById('alertCaret').textContent = '▲';
+    // Analysis already running/done in background — nothing to trigger here
+  }
+
+  function closePopover() {
+    const pop = document.getElementById('popover');
+    pop.classList.add('closing');
+    setTimeout(() => {
+      isOpen = false;
+      document.getElementById('popoverOverlay').classList.remove('visible');
+      document.getElementById('preChartBadge').classList.remove('open');
+      document.getElementById('alertCaret').textContent = '▼';
+    }, 160);
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('popoverOverlay')) closePopover();
+  }
+
+  // ── Patient data ──
+  const patientData = {
+    demographics: { name: "Robert Martinez", age: 64, dob: "03/14/1961", encounter: "Annual Wellness Visit, 2:30 PM today" },
+    problems: [
+      { code: "E11.9", name: "Type 2 Diabetes Mellitus", since: 2018, status: "Poorly controlled" },
+      { code: "I10",   name: "Essential Hypertension", since: 2015 },
+      { code: "E78.5", name: "Hyperlipidemia Mixed", since: 2016 },
+      { code: "F32.1", name: "Major Depressive Disorder Moderate", since: 2022, status: "Partially treated" },
+      { code: "M54.5", name: "Chronic Low Back Pain", since: 2020 },
+      { code: "Z87.891", name: "Hx Tobacco Use quit 2019", note: "40 pack-year" }
+    ],
+    medications: [
+      { name: "Metformin 1000mg BID", status: "Overdue refill Oct 2025", adherence: "Forgets most days" },
+      { name: "Lisinopril 10mg QD", status: "Active" },
+      { name: "Atorvastatin 40mg QHS", status: "Active" },
+      { name: "Sertraline 50mg QD", status: "No refill since Apr 2022" },
+      { name: "Aspirin 81mg QD", status: "OTC" }
+    ],
+    labs: [
+      { name: "HbA1c", value: "9.2%", status: "HIGH", date: "Jan 2026", ref: "<7.0%" },
+      { name: "Fasting Glucose", value: "214 mg/dL", status: "HIGH", date: "Jan 2026" },
+      { name: "LDL", value: "118 mg/dL", status: "Above goal <70 for DM", date: "Jan 2026" },
+      { name: "eGFR", value: "58 mL/min", status: "CKD Stage 3a", date: "Jan 2026" },
+      { name: "Urine ACR", value: "52 mg/g", status: "Microalbuminuria", date: "Jan 2026" }
+    ],
+    vitals: [
+      { name: "BP", value: "152/94 mmHg", status: "ELEVATED", date: "Feb 12 2026" },
+      { name: "BMI", value: "31.4", status: "Obese Class I", date: "Feb 12 2026" }
+    ],
+    questionnaire: {
+      phq9: 14, phq9_interp: "Moderate depression",
+      chief_complaint: "Back pain getting worse; wants to discuss blood sugar",
+      adherence: "Forgets metformin most days",
+      new_symptoms: "Tingling in both feet (new since last visit)",
+      exercise: "Rarely/Never — limited by back pain",
+      alcohol: "3-4 drinks/week"
+    },
+    care_gaps: [
+      { name: "Diabetic Eye Exam", last: "Mar 2023", status: "2+ years overdue" },
+      { name: "Colorectal Cancer Screening", last: "Never", status: "Never done age 64" },
+      { name: "Diabetic Foot Exam", last: "Jun 2025", status: "Due" },
+      { name: "Pneumococcal PPSV23", last: "Never", status: "Indicated age 64 with DM" },
+      { name: "Lung Cancer LDCT", last: "Never", status: "Indicated 40 pack-yr quit 2019 age 64" }
+    ],
+    sdoh: [
+      "Lives alone limited social support",
+      "Food insecurity — sometimes runs short before month end",
+      "Transportation barrier to pharmacy likely contributing to medication gaps"
+    ]
+  };
+
+  const systemPrompt = `You are a clinical decision support AI in a primary care EHR. Analyze this patient chart and return a structured pre-encounter briefing as a JSON object ONLY. No preamble. No markdown. No explanation outside the JSON.
+
+Return exactly:
+{
+  "alert_count": <integer>,
+  "narrative": "2-3 sentence clinical synthesis",
+  "patient_concerns": ["up to 3 short patient-stated concerns"],
+  "cards": [
+    {
+      "priority": "urgent" | "warn" | "info",
+      "category": "Diabetes" | "Cardiovascular" | "Mental Health" | "Medication" | "Neuropathy" | "Screening" | "Social" | "Preventive",
+      "icon": "⚠️" | "🫀" | "🧠" | "💊" | "🦶" | "🔬" | "🏠" | "💉" | "📋",
+      "title": "Clinician title max 8 words",
+      "snippet": "Key data point for at-a-glance view, e.g. 'HbA1c 9.2% · Jan 2026' or 'PHQ-9: 14/27'",
+      "body": "1-2 sentences with specific values.",
+      "recommendation": "One concrete actionable recommendation for today",
+      "ehr_actions": [
+        { "label": "2-4 word label", "type": "order"|"rx"|"refer"|"flag"|"schedule", "detail": "specific detail for EHR" }
+      ],
+      "references": [
+        {
+          "title": "Guideline or study name",
+          "source": "Org or journal, year",
+          "type": "guideline" | "rct" | "meta" | "cohort",
+          "finding": "One sentence: what this source says relevant to the recommendation"
+        }
+      ],
+      "pathway": {
+        "title": "Short pathway name e.g. ADA T2DM Glycemic Management",
+        "nodes": [
+          {
+            "id": "n1",
+            "label": "T2DM Diagnosis",
+            "type": "start",
+            "applied": true,
+            "x": 360, "y": 40
+          }
+        ],
+        "edges": [
+          { "from": "n1", "to": "n2", "label": "HbA1c > 9%" }
+        ]
+      }
+    }
+  ]
+}
+
+Rules:
+- 5-6 cards ordered urgent → warn → info
+- Every card must have 1-3 ehr_actions
+- Every card must have 2-3 references (real guidelines: ADA, ACC/AHA, USPSTF, etc.)
+- Only the 2 most important cards need a pathway. Other cards omit the pathway field entirely.
+- Pathway nodes: use type "start"|"decision"|"action"|"outcome"|"warning". Set "applied":true for nodes on THIS patient's path.
+- Pathway layout: canvas is 720x440px. Each pathway should have exactly 8-10 nodes. Space nodes ~90px vertically. Center main path at x=360. Branch alternatives left (x=180) or right (x=540).
+- Keep node labels short (max 4 words).
+- Return ONLY the JSON object. No other text.`;
+
+  async function runAnalysis() {
+    analysisRun = true;
+    const btn = document.getElementById('reanalyzeBtn');
+    btn.disabled = true;
+    btn.textContent = '↻ Analyzing…';
+
+    // Only show spinner inside popover if it's already open
+    if (isOpen) {
+      document.getElementById('loadingState').style.display = 'flex';
+      document.getElementById('briefingContent').style.display = 'none';
+      document.getElementById('briefingContent').innerHTML = '';
+    }
+
+    try {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 8000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: `Patient chart data:\n\n${JSON.stringify(patientData, null, 2)}` }]
+        })
+      });
+
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error.message || 'API error');
+      const text = data.content.map(i => i.text || '').join('');
+      const s = text.indexOf('{'), e = text.lastIndexOf('}');
+      if (s === -1 || e === -1) throw new Error('Could not find JSON in response');
+      const result = JSON.parse(text.slice(s, e + 1));
+
+      // Update badge count and signal ready
+      const count = result.alert_count || result.cards.length;
+      document.getElementById('alertCount').textContent = count;
+      // If popover isn't open yet, pulse badge to signal readiness
+      if (!isOpen) {
+        const badge = document.getElementById('preChartBadge');
+        badge.style.animation = 'none';
+        setTimeout(() => { badge.style.animation = 'alertPulse 1s ease-in-out 2'; }, 10);
+      }
+
+      document.getElementById('loadingState').style.display = 'none';
+      renderBriefing(result);
+
+    } catch (err) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('briefingContent').innerHTML =
+        `<div class="error-state">⚠ Analysis failed: ${err.message}<br><br>Try re-analyzing or check API key.</div>`;
+      document.getElementById('briefingContent').style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '↻ Re-analyze';
+  }
+
+  // Store rendered card data for pathway lookup
+  let cardStore = {};
+
+  function renderBriefing(data) {
+    cardStore = {};
+    const container = document.getElementById('briefingContent');
+    let html = '';
+
+    // Narrative block
+    html += `<div class="narrative-block">
+      <div class="narrative-label">Clinical Summary <span class="ai-pill">AI</span></div>
+      <div class="narrative-text">${data.narrative}</div>
+    </div>`;
+
+    // Patient concerns
+    if (data.patient_concerns?.length) {
+      html += `<div class="concern-section">
+        <div class="section-label-sm">Patient's Concerns Today</div>
+        <div class="concern-pills">
+          ${data.patient_concerns.map(c =>
+            `<span class="concern-pill"><span class="concern-dot"></span>${c}</span>`
+          ).join('')}
+        </div>
+      </div>`;
+    }
+
+    // Cards grouped by priority
+    const groups = [
+      { key: 'urgent', label: '🔴 Needs Attention' },
+      { key: 'warn',   label: '🟡 Review & Act Today' },
+      { key: 'info',   label: '🔵 Also Address' }
+    ];
+
+    groups.forEach(g => {
+      const cards = (data.cards || []).filter(c => c.priority === g.key);
+      if (!cards.length) return;
+      html += `<div class="section-divider">${g.label}</div>`;
+      cards.forEach((card, i) => {
+        const cardIdx = `${g.key}_${i}`;
+
+        const firstAction = card.ehr_actions?.[0];
+        const quickBtnHtml = firstAction ? `<button class="card-quick-action ${firstAction.type}" id="quick_${cardIdx}_0"
+          onclick="event.stopPropagation();quickAction(this,'${cardIdx}','${(firstAction.detail||'').replace(/'/g,'&#39;')}','${firstAction.type}','${(firstAction.label||'').replace(/'/g,'&#39;')}')"
+        >${actionIcon(firstAction.type)} ${firstAction.label}</button>` : '';
+
+        const actBtns = (card.ehr_actions || []).map((a, ai) => {
+          const detail = (a.detail || '').replace(/'/g, '&#39;');
+          const label = (a.label || '').replace(/'/g, '&#39;');
+          return `<button class="ehr-action-btn ${a.type}" id="full_${cardIdx}_${ai}"
+            onclick="ehrAction(this,'${cardIdx}_${ai}','${detail}','${a.type}','${label}')"
+          >${actionIcon(a.type)} ${a.label}</button>`;
+        }).join('');
+
+        // References
+        const refs = (card.references || []);
+        const refsHtml = refs.length ? `
+          <button class="ref-toggle" id="reftog_${cardIdx}" onclick="toggleRefs('${cardIdx}')">
+            <span>📚 ${refs.length} reference${refs.length > 1 ? 's' : ''}</span>
+            <span class="ref-toggle-arrow">▼</span>
+          </button>
+          <div class="ref-drawer" id="refdrawer_${cardIdx}">
+            <ul class="ref-list">
+              ${refs.map((r, ri) => `
+                <li class="ref-item">
+                  <span class="ref-num">${ri + 1}</span>
+                  <div class="ref-body">
+                    <div class="ref-title">${r.title} <span class="ref-tag ${r.type}">${r.type.toUpperCase()}</span></div>
+                    <div class="ref-meta">${r.source}</div>
+                    <div style="font-size:11.5px;color:#4a5180;margin-top:3px;line-height:1.5">${r.finding}</div>
+                  </div>
+                </li>`).join('')}
+            </ul>
+            ${card.pathway ? `<button class="pathway-btn" onclick="openPathway('${cardIdx}')">🌳 View Clinical Pathway</button>` : ''}
+          </div>` : '';
+
+        html += `<div class="priority-card ${card.priority}" id="card_${cardIdx}">
+          <div class="card-row" onclick="toggleCard('${cardIdx}')">
+            <div class="card-stripe"></div>
+            <span class="card-row-icon">${card.icon}</span>
+            <div class="card-row-main">
+              <div class="card-row-title">${card.title}</div>
+              <div class="card-row-snippet">${card.snippet || card.body?.split('.')[0] || ''}</div>
+            </div>
+            <div class="card-row-right">
+              <span class="card-category ${card.priority}">${card.category}</span>
+              ${quickBtnHtml}
+              <span class="card-chevron">▼</span>
+            </div>
+          </div>
+          <div class="card-detail">
+            <div class="card-body">${card.body}</div>
+            <div class="card-rec"><span class="card-rec-arrow">→</span>${card.recommendation}</div>
+            <div class="ehr-actions">${actBtns}</div>
+            ${refsHtml}
+          </div>
+        </div>`;
+      });
+    });
+
+    // Register cards in store for pathway/ref access
+    (data.cards || []).forEach((card, i) => {
+      const groups2 = ['urgent','warn','info'];
+      const gKey = card.priority;
+      const gCards = (data.cards || []).filter(c => c.priority === gKey);
+      const gIdx = gCards.indexOf(card);
+      cardStore[`${gKey}_${gIdx}`] = card;
+    });
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+  }
+
+  // ── Card expand/collapse ──
+  function toggleCard(cardIdx) {
+    const card = document.getElementById(`card_${cardIdx}`);
+    card.classList.toggle('expanded');
+  }
+
+  // Quick action from collapsed row — mirrors to the full action btn too
+  function quickAction(btn, cardIdx, detail, type, label) {
+    if (btn.classList.contains('sent')) return;
+    btn.classList.add('sent');
+    // Also mark the matching full button sent
+    const fullBtn = document.getElementById(`full_${cardIdx}_0`);
+    if (fullBtn) fullBtn.classList.add('sent');
+    const msg = (toastTemplates[type] || (d => d))(detail || label);
+    showToast(toastIcons[type] || '✓', msg);
+  }
+
+  // ── References drawer toggle ──
+  function toggleRefs(cardIdx) {
+    const drawer = document.getElementById(`refdrawer_${cardIdx}`);
+    const tog = document.getElementById(`reftog_${cardIdx}`);
+    const open = drawer.classList.toggle('open');
+    tog.classList.toggle('open', open);
+  }
+
+  // ── Pathway modal ──
+  function openPathway(cardIdx) {
+    const card = cardStore[cardIdx];
+    if (!card || !card.pathway) return;
+    document.getElementById('pathwayTitle').textContent = card.pathway.title || 'Clinical Pathway';
+    document.getElementById('pathwaySub').textContent = `${card.title} · highlighted nodes show this patient's path`;
+    document.getElementById('pathwayOverlay').classList.add('visible');
+    requestAnimationFrame(() => drawPathway(card.pathway));
+  }
+
+  function closePathway(e) {
+    if (!e || e.target === document.getElementById('pathwayOverlay'))
+      document.getElementById('pathwayOverlay').classList.remove('visible');
+  }
+
+  // ── Canvas pathway renderer ──
+  function drawPathway(pathway) {
+    const canvas = document.getElementById('pathwayCanvas');
+    const nodes = pathway.nodes || [];
+    const edges = pathway.edges || [];
+
+    // Compute canvas bounds from node positions
+    const maxX = Math.max(...nodes.map(n => (n.x || 0) + 100), 720);
+    const maxY = Math.max(...nodes.map(n => (n.y || 0) + 60), 460);
+    canvas.width  = Math.max(maxX + 60, 720);
+    canvas.height = Math.max(maxY + 60, 460);
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const nodeMap = {};
+    nodes.forEach(n => nodeMap[n.id] = n);
+
+    const W = 140, H = 44, R = 10;
+
+    // Colours
+    const COLORS = {
+      start:    { applied: { fill:'#3b5bdb', stroke:'#2f4ac0', text:'#fff'   }, dim: { fill:'#e8ecf5', stroke:'#c5cde8', text:'#9aa0bc' } },
+      decision: { applied: { fill:'#1971c2', stroke:'#1565a8', text:'#fff'   }, dim: { fill:'#e8ecf5', stroke:'#c5cde8', text:'#9aa0bc' } },
+      action:   { applied: { fill:'#2f9e44', stroke:'#276b35', text:'#fff'   }, dim: { fill:'#e8ecf5', stroke:'#c5cde8', text:'#9aa0bc' } },
+      outcome:  { applied: { fill:'#2f9e44', stroke:'#1e6b2c', text:'#fff'   }, dim: { fill:'#e8ecf5', stroke:'#c5cde8', text:'#9aa0bc' } },
+      warning:  { applied: { fill:'#e03131', stroke:'#b92121', text:'#fff'   }, dim: { fill:'#fde8e8', stroke:'#f5b8b8', text:'#c97070' } },
+    };
+
+    // Draw edges first
+    edges.forEach(e => {
+      const from = nodeMap[e.from], to = nodeMap[e.to];
+      if (!from || !to) return;
+      const fx = from.x, fy = from.y + H/2;
+      const tx = to.x,   ty = to.y - H/2 + 2;
+      const isAppliedEdge = from.applied && to.applied;
+
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      // Smooth bezier
+      ctx.bezierCurveTo(fx, fy + 24, tx, ty - 24, tx, ty);
+      ctx.strokeStyle = isAppliedEdge ? '#3b5bdb' : '#c5cde8';
+      ctx.lineWidth = isAppliedEdge ? 2.5 : 1.5;
+      ctx.setLineDash(isAppliedEdge ? [] : [4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrowhead
+      const angle = Math.atan2(ty - (fy + 24), tx - fx);
+      const aLen = 8;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - aLen * Math.cos(angle - 0.4), ty - aLen * Math.sin(angle - 0.4));
+      ctx.lineTo(tx - aLen * Math.cos(angle + 0.4), ty - aLen * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = isAppliedEdge ? '#3b5bdb' : '#c5cde8';
+      ctx.fill();
+
+      // Edge label
+      if (e.label) {
+        const mx = (fx + tx) / 2, my = (fy + ty) / 2;
+        ctx.font = '10px IBM Plex Sans, sans-serif';
+        ctx.fillStyle = isAppliedEdge ? '#3b5bdb' : '#9aa0bc';
+        ctx.textAlign = 'center';
+        // Small pill background
+        const lw = ctx.measureText(e.label).width + 10;
+        ctx.fillStyle = isAppliedEdge ? '#eef2ff' : '#f0f2f8';
+        roundRect(ctx, mx - lw/2, my - 9, lw, 16, 4);
+        ctx.fill();
+        ctx.fillStyle = isAppliedEdge ? '#3b5bdb' : '#9aa0bc';
+        ctx.fillText(e.label, mx, my + 2);
+      }
+    });
+
+    // Draw nodes
+    nodes.forEach(n => {
+      const typeKey = n.type || 'decision';
+      const scheme = (COLORS[typeKey] || COLORS.decision)[n.applied ? 'applied' : 'dim'];
+      const x = n.x - W/2, y = n.y - H/2;
+
+      // Shadow for applied nodes
+      if (n.applied) {
+        ctx.shadowColor = 'rgba(59,91,219,0.25)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 3;
+      }
+
+      // Node shape: diamond for decision, rounded rect for others
+      if (typeKey === 'decision') {
+        const hw = W/2, hh = H/2 + 4;
+        ctx.beginPath();
+        ctx.moveTo(n.x, n.y - hh);
+        ctx.lineTo(n.x + hw, n.y);
+        ctx.lineTo(n.x, n.y + hh);
+        ctx.lineTo(n.x - hw, n.y);
+        ctx.closePath();
+      } else {
+        roundRect(ctx, x, y, W, H, R);
+      }
+
+      ctx.fillStyle = scheme.fill;
+      ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+      // Stroke
+      ctx.strokeStyle = scheme.stroke;
+      ctx.lineWidth = n.applied ? 2 : 1.5;
+      if (typeKey === 'decision') {
+        const hw = W/2, hh = H/2 + 4;
+        ctx.beginPath();
+        ctx.moveTo(n.x, n.y - hh);
+        ctx.lineTo(n.x + hw, n.y);
+        ctx.lineTo(n.x, n.y + hh);
+        ctx.lineTo(n.x - hw, n.y);
+        ctx.closePath();
+      } else {
+        roundRect(ctx, x, y, W, H, R);
+      }
+      ctx.stroke();
+
+      // Applied indicator ring
+      if (n.applied && typeKey !== 'decision') {
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = 1;
+        roundRect(ctx, x + 3, y + 3, W - 6, H - 6, R - 2);
+        ctx.stroke();
+      }
+
+      // Label
+      ctx.fillStyle = scheme.text;
+      ctx.font = `${n.applied ? '600' : '400'} 11.5px IBM Plex Sans, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      wrapText(ctx, n.label, n.x, n.y, W - 16, 14);
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, cx, cy, maxW, lineH) {
+    const words = text.split(' ');
+    let lines = [], line = '';
+    words.forEach(w => {
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line); line = w;
+      } else { line = test; }
+    });
+    if (line) lines.push(line);
+    const startY = cy - ((lines.length - 1) * lineH) / 2;
+    lines.forEach((l, i) => ctx.fillText(l, cx, startY + i * lineH));
+  }
+
+  function actionIcon(type) {
+    return { order: '🔬', rx: '💊', refer: '📋', flag: '🚩', schedule: '📅' }[type] || '•';
+  }
+
+
+  const toastTemplates = {
+    order:    d => `Order placed: ${d}`,
+    rx:       d => `Rx sent to pharmacy: ${d}`,
+    refer:    d => `Referral initiated: ${d}`,
+    flag:     d => `Chart note added: ${d}`,
+    schedule: d => `Follow-up scheduled: ${d}`
+  };
+  const toastIcons = { order:'🔬', rx:'💊', refer:'📋', flag:'🚩', schedule:'📅' };
+
+  // Kick off analysis immediately on page load — results ready before clinician clicks
+  window.addEventListener('load', () => { runAnalysis(); });
+
+  let toastTimer = null;
+  function ehrAction(btn, id, detail, type, label) {
+    if (btn.classList.contains('sent')) return;
+    btn.classList.add('sent');
+    const msg = (toastTemplates[type] || (d => d))(detail || label);
+    const icon = toastIcons[type] || '✓';
+    showToast(icon, msg);
+  }
+
+  function showToast(icon, msg) {
+    const t = document.getElementById('ehrToast');
+    document.getElementById('toastIcon').textContent = icon;
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3400);
+  }
+</script>
+</body>
+</html>
