@@ -513,12 +513,6 @@
     gap: 8px;
   }
   .section-divider::after { content: ''; flex: 1; height: 1px; background: #dde3f8; }
-  .section-divider.urgent { color: #b91c1c; }
-  .section-divider.urgent::after { background: #fca5a5; }
-  .section-divider.warn   { color: #b45309; }
-  .section-divider.warn::after   { background: #fbbf7a; }
-  .section-divider.info   { color: #1d4ed8; }
-  .section-divider.info::after   { background: #93c5fd; }
 
   /* ── Compact expandable cards ── */
   .priority-card {
@@ -532,26 +526,25 @@
     transition: box-shadow 0.18s;
   }
   .priority-card:hover { box-shadow: 0 3px 12px rgba(59,91,219,0.1); }
-  .priority-card.urgent { border-color: #fecaca; border-left: 4px solid #dc2626; background: #fff6f6; }
-  .priority-card.warn   { border-color: #fed7aa; border-left: 4px solid #ea580c; background: #fffbf2; }
-  .priority-card.info   { border-color: #bfdbfe; border-left: 4px solid #2563eb; background: #f6faff; }
+  .priority-card.urgent { border-color: #ffc9c9; }
+  .priority-card.warn   { border-color: #ffd8a8; }
+  .priority-card.info   { border-color: #a5d8ff; }
 
   /* Collapsed row — always visible */
   .card-row {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
+    align-items: center;
+    gap: 9px;
     padding: 9px 12px;
     cursor: pointer;
     user-select: none;
+    min-height: 44px;
   }
   .card-row:hover { background: #fafbff; }
-  .card-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .card-row-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 20px; }
 
   /* Priority stripe on left edge */
   .card-stripe {
-    width: 5px;
+    width: 4px;
     border-radius: 99px;
     align-self: stretch;
     flex-shrink: 0;
@@ -561,24 +554,6 @@
   .priority-card.warn   .card-stripe { background: linear-gradient(180deg,#e67700,#ffa94d); }
   .priority-card.info   .card-stripe { background: linear-gradient(180deg,#1971c2,#4dabf7); }
 
-  /* Urgency-specific hover states */
-  .priority-card.urgent .card-row:hover { background: #ffecec; }
-  .priority-card.warn   .card-row:hover { background: #fff4e0; }
-  .priority-card.info   .card-row:hover { background: #eef5ff; }
-
-  /* Urgency-specific title colors */
-  .priority-card.urgent .card-row-title { color: #991b1b; }
-  .priority-card.warn   .card-row-title { color: #78350f; }
-
-  /* Urgency-specific expanded detail backgrounds */
-  .priority-card.urgent .card-detail { background: #fff8f8; border-top-color: #fecaca; }
-  .priority-card.warn   .card-detail { background: #fffdf5; border-top-color: #fde68a; }
-
-  /* Urgency-specific recommendation block */
-  .priority-card.urgent .card-rec { background: #fff0f0; color: #991b1b; border-left: 3px solid #f87171; padding-left: 11px; }
-  .priority-card.warn   .card-rec { background: #fffbeb; color: #78350f; border-left: 3px solid #fbbf24; padding-left: 11px; }
-  .priority-card.info   .card-rec { border-left: 3px solid #60a5fa; padding-left: 11px; }
-
   .card-row-icon { font-size: 15px; flex-shrink: 0; line-height: 1; }
 
   .card-row-main { flex: 1; min-width: 0; }
@@ -587,7 +562,9 @@
     font-size: 12.5px;
     color: #1a1f3c;
     line-height: 1.3;
-    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .card-row-snippet {
     font-size: 11px;
@@ -599,16 +576,15 @@
   }
 
   .card-row-right { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
-  .card-row-right-top { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
 
   .card-category {
     font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
     text-transform: uppercase; padding: 2px 7px; border-radius: 99px;
     flex-shrink: 0; border: 1.5px solid; white-space: nowrap;
   }
-  .card-category.urgent { color: #991b1b; background: #fee2e2; border-color: #fca5a5; font-weight: 800; }
-  .card-category.warn   { color: #78350f; background: #fef3c7; border-color: #fbbf24; font-weight: 800; }
-  .card-category.info   { color: #1e40af; background: #dbeafe; border-color: #93c5fd; }
+  .card-category.urgent { color: #c92a2a; background: #fff5f5; border-color: #ffc9c9; }
+  .card-category.warn   { color: #d9480f; background: #fff4e6; border-color: #ffd8a8; }
+  .card-category.info   { color: #1864ab; background: #e7f5ff; border-color: #a5d8ff; }
 
   /* Inline action buttons on collapsed row — only show 1st action */
   .card-quick-action {
@@ -626,12 +602,12 @@
     letter-spacing: 0.01em;
     flex-shrink: 0;
   }
-  .card-quick-action.order,
-  .card-quick-action.rx,
-  .card-quick-action.refer,
-  .card-quick-action.flag,
-  .card-quick-action.schedule { color: #fff; background: #1e40af; box-shadow: 0 2px 5px rgba(30,64,175,0.3); }
-  .card-quick-action:hover    { background: #1e3a8a; box-shadow: 0 3px 8px rgba(30,64,175,0.4); transform: translateY(-1px); }
+  .card-quick-action.order   { color: #fff; background: #1971c2; box-shadow: 0 2px 5px rgba(25,113,194,0.3); }
+  .card-quick-action.rx      { color: #fff; background: #2f9e44; box-shadow: 0 2px 5px rgba(47,158,68,0.3); }
+  .card-quick-action.refer   { color: #fff; background: #7048e8; box-shadow: 0 2px 5px rgba(112,72,232,0.3); }
+  .card-quick-action.flag    { color: #fff; background: #e03131; box-shadow: 0 2px 5px rgba(224,49,49,0.3); }
+  .card-quick-action.schedule{ color: #fff; background: #e67700; box-shadow: 0 2px 5px rgba(230,119,0,0.3); }
+  .card-quick-action:hover   { filter: brightness(1.1); transform: translateY(-1px); }
   .card-quick-action.sent    { opacity: 0.4; pointer-events: none; text-decoration: line-through; box-shadow: none; }
 
   .card-chevron {
@@ -688,16 +664,16 @@
     white-space: nowrap;
     letter-spacing: 0.01em;
   }
-  .ehr-action-btn.order,
-  .ehr-action-btn.rx,
-  .ehr-action-btn.refer,
-  .ehr-action-btn.flag,
-  .ehr-action-btn.schedule { color: #fff; background: #1e40af; box-shadow: 0 2px 6px rgba(30,64,175,0.35), inset 0 1px 0 rgba(255,255,255,0.12); }
-  .ehr-action-btn.order:hover,
-  .ehr-action-btn.rx:hover,
-  .ehr-action-btn.refer:hover,
-  .ehr-action-btn.flag:hover,
-  .ehr-action-btn.schedule:hover { background: #1e3a8a; box-shadow: 0 3px 10px rgba(30,64,175,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.order   { color: #fff; background: #1971c2; box-shadow: 0 2px 6px rgba(25,113,194,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.order:hover   { background: #1864ab; box-shadow: 0 3px 10px rgba(25,113,194,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.rx      { color: #fff; background: #2f9e44; box-shadow: 0 2px 6px rgba(47,158,68,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.rx:hover      { background: #2b8a3e; box-shadow: 0 3px 10px rgba(47,158,68,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.refer   { color: #fff; background: #7048e8; box-shadow: 0 2px 6px rgba(112,72,232,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.refer:hover   { background: #6741d9; box-shadow: 0 3px 10px rgba(112,72,232,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.flag    { color: #fff; background: #e03131; box-shadow: 0 2px 6px rgba(224,49,49,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.flag:hover    { background: #c92a2a; box-shadow: 0 3px 10px rgba(224,49,49,0.45); transform: translateY(-1px); }
+  .ehr-action-btn.schedule { color: #fff; background: #e67700; box-shadow: 0 2px 6px rgba(230,119,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .ehr-action-btn.schedule:hover { background: #d9480f; box-shadow: 0 3px 10px rgba(230,119,0,0.45); transform: translateY(-1px); }
   .ehr-action-btn.sent {
     opacity: 0.45; cursor: default; text-decoration: line-through;
     pointer-events: none; box-shadow: none; transform: none;
@@ -1126,7 +1102,6 @@
 
   // ── Popover state ──
   let isOpen = false;
-  let analysisRun = false;
 
   function togglePreChart() { isOpen ? closePopover() : openPopover(); }
 
@@ -1222,7 +1197,7 @@ Return exactly:
       "body": "1-2 sentences with specific values.",
       "recommendation": "One concrete actionable recommendation for today",
       "ehr_actions": [
-        { "label": "Verb-first 2-4 words e.g. 'Order HbA1c', 'Schedule Eye Exam', 'Refer Nephrology', 'Prescribe Metformin'", "type": "order"|"rx"|"refer"|"flag"|"schedule", "detail": "specific detail for EHR" }
+        { "label": "2-4 word label", "type": "order"|"rx"|"refer"|"flag"|"schedule", "detail": "specific detail for EHR" }
       ],
       "references": [
         {
@@ -1261,41 +1236,186 @@ Rules:
 - Keep node labels short (max 4 words).
 - Return ONLY the JSON object. No other text.`;
 
-  async function runAnalysis() {
-    analysisRun = true;
+  // ── STATIC DEMO DATA — no API key or network required ──
+  const STATIC_RESULT = {
+    "alert_count": 6,
+    "narrative": "Robert Martinez presents for annual wellness with critically uncontrolled T2DM (HbA1c 9.2%), uncontrolled hypertension (152/94 mmHg), and new bilateral foot tingling suggesting early peripheral neuropathy. Sertraline has had no refill since April 2022 despite a PHQ-9 of 14 today, and five preventive care gaps remain open including a diabetic eye exam now 2+ years overdue.",
+    "patient_concerns": ["Blood sugar control", "Worsening back pain", "Tingling in both feet"],
+    "cards": [
+      {
+        "priority": "urgent",
+        "category": "Diabetes",
+        "icon": "⚠️",
+        "title": "Critically Uncontrolled Diabetes",
+        "snippet": "HbA1c 9.2% · FBG 214 mg/dL · Jan 2026",
+        "body": "HbA1c 9.2% is well above the ADA target of <7.0% and fasting glucose of 214 mg/dL confirms persistent hyperglycemia. Patient reports forgetting metformin most days; refill has been overdue since Oct 2025.",
+        "recommendation": "Refill metformin today with mail-delivery option given transportation barrier; consider adding empagliflozin for glycemic and renal benefit given CKD 3a with microalbuminuria.",
+        "ehr_actions": [
+          { "label": "Refill Metformin", "type": "rx", "detail": "Metformin 1000mg BID — 90-day supply, request mail delivery" },
+          { "label": "Prescribe Empagliflozin", "type": "rx", "detail": "Empagliflozin 10mg QD — new Rx, monitor eGFR (currently 58)" },
+          { "label": "Order HbA1c", "type": "order", "detail": "HbA1c — repeat in 3 months to assess treatment response" }
+        ],
+        "references": [
+          { "title": "ADA Standards of Care in Diabetes 2025", "source": "American Diabetes Association, 2025", "type": "guideline", "finding": "Target HbA1c <7% for most adults; intensify therapy when HbA1c >9%; SGLT-2 inhibitors are preferred add-on agents in CKD with albuminuria." },
+          { "title": "EMPA-REG OUTCOME Trial", "source": "Zinman et al., NEJM, 2015", "type": "rct", "finding": "Empagliflozin reduced cardiovascular death by 38% and progression of renal disease by 39% in high-risk T2DM patients." },
+          { "title": "Medication Adherence in T2DM", "source": "Polonsky & Henry, Diabetic Medicine, 2016", "type": "cohort", "finding": "Medication non-adherence in T2DM is associated with 0.5–1.2% higher HbA1c; pharmacy delivery improves adherence rates." }
+        ],
+        "pathway": {
+          "title": "ADA T2DM Glycemic Management Pathway",
+          "nodes": [
+            { "id": "n1", "label": "T2DM Diagnosis", "type": "start", "applied": true, "x": 360, "y": 44 },
+            { "id": "n2", "label": "HbA1c at Goal?", "type": "decision", "applied": true, "x": 360, "y": 134 },
+            { "id": "n3", "label": "Continue Monitoring", "type": "outcome", "applied": false, "x": 180, "y": 224 },
+            { "id": "n4", "label": "HbA1c ≥ 9%", "type": "warning", "applied": true, "x": 540, "y": 224 },
+            { "id": "n5", "label": "Metformin Adherent?", "type": "decision", "applied": true, "x": 360, "y": 314 },
+            { "id": "n6", "label": "Optimize Metformin", "type": "action", "applied": false, "x": 180, "y": 404 },
+            { "id": "n7", "label": "Add Second Agent", "type": "action", "applied": true, "x": 540, "y": 404 },
+            { "id": "n8", "label": "CKD / CV Risk?", "type": "decision", "applied": true, "x": 360, "y": 494 },
+            { "id": "n9", "label": "Empagliflozin 10mg", "type": "outcome", "applied": true, "x": 360, "y": 584 }
+          ],
+          "edges": [
+            { "from": "n1", "to": "n2", "label": "" },
+            { "from": "n2", "to": "n3", "label": "At goal" },
+            { "from": "n2", "to": "n4", "label": "9.2% — above goal" },
+            { "from": "n4", "to": "n5", "label": "Intensify therapy" },
+            { "from": "n5", "to": "n6", "label": "Adherent" },
+            { "from": "n5", "to": "n7", "label": "Non-adherent + CKD" },
+            { "from": "n7", "to": "n8", "label": "" },
+            { "from": "n8", "to": "n9", "label": "CKD 3a · ACR 52" }
+          ]
+        }
+      },
+      {
+        "priority": "urgent",
+        "category": "Mental Health",
+        "icon": "🧠",
+        "title": "Undertreated Depression — PHQ-9 14",
+        "snippet": "PHQ-9: 14/27 · No Sertraline refill since Apr 2022",
+        "body": "PHQ-9 score of 14 indicates moderate depression. Sertraline 50mg has had no refill since April 2022 — effectively untreated for nearly 4 years. Depression is likely compounding medication non-adherence and functional decline.",
+        "recommendation": "Re-prescribe sertraline 50mg today; screen for suicidal ideation (PHQ-9 item 9); schedule 4-week follow-up phone check.",
+        "ehr_actions": [
+          { "label": "Re-prescribe Sertraline", "type": "rx", "detail": "Sertraline 50mg QD — resume prior dose, 90-day supply with refills" },
+          { "label": "Flag PHQ-9 Score", "type": "flag", "detail": "PHQ-9 14 today — moderate depression, sertraline restarted, 4-week follow-up needed" },
+          { "label": "Schedule Follow-up", "type": "schedule", "detail": "Phone check-in in 4 weeks — depression response and medication adherence" }
+        ],
+        "references": [
+          { "title": "USPSTF Depression Screening 2023", "source": "USPSTF, 2023", "type": "guideline", "finding": "Screen adults for depression; initiate or refer treatment for PHQ-9 scores ≥10 indicating moderate-to-severe depression." },
+          { "title": "Depression and Diabetes — Bidirectional Risk", "source": "Rotella & Mannucci, Diabetes Care, 2013", "type": "meta", "finding": "Comorbid depression in T2DM is associated with 1.5× higher HbA1c and substantially lower medication adherence rates." }
+        ],
+        "pathway": {
+          "title": "PHQ-9 Depression Management Pathway",
+          "nodes": [
+            { "id": "p1", "label": "PHQ-9 Screening", "type": "start", "applied": true, "x": 360, "y": 44 },
+            { "id": "p2", "label": "Score ≥ 10?", "type": "decision", "applied": true, "x": 360, "y": 134 },
+            { "id": "p3", "label": "Watchful Waiting", "type": "outcome", "applied": false, "x": 180, "y": 224 },
+            { "id": "p4", "label": "Score 10–19", "type": "warning", "applied": true, "x": 540, "y": 224 },
+            { "id": "p5", "label": "On Active Tx?", "type": "decision", "applied": true, "x": 360, "y": 314 },
+            { "id": "p6", "label": "Optimize Current Rx", "type": "action", "applied": false, "x": 180, "y": 404 },
+            { "id": "p7", "label": "Initiate / Resume SSRI", "type": "action", "applied": true, "x": 540, "y": 404 },
+            { "id": "p8", "label": "Sertraline 50mg QD", "type": "outcome", "applied": true, "x": 360, "y": 494 },
+            { "id": "p9", "label": "Follow-up 4 Weeks", "type": "action", "applied": true, "x": 360, "y": 584 }
+          ],
+          "edges": [
+            { "from": "p1", "to": "p2", "label": "" },
+            { "from": "p2", "to": "p3", "label": "< 10" },
+            { "from": "p2", "to": "p4", "label": "14 — moderate" },
+            { "from": "p4", "to": "p5", "label": "" },
+            { "from": "p5", "to": "p6", "label": "Active treatment" },
+            { "from": "p5", "to": "p7", "label": "No refill since 2022" },
+            { "from": "p7", "to": "p8", "label": "" },
+            { "from": "p8", "to": "p9", "label": "" }
+          ]
+        }
+      },
+      {
+        "priority": "urgent",
+        "category": "Neuropathy",
+        "icon": "🦶",
+        "title": "New Bilateral Foot Tingling",
+        "snippet": "New symptom this visit · Foot exam due · HbA1c 9.2%",
+        "body": "Patient reports new bilateral foot tingling since last visit, consistent with early diabetic peripheral neuropathy in the setting of HbA1c 9.2% and CKD 3a. Diabetic foot exam is listed as due in care gaps.",
+        "recommendation": "Perform diabetic foot exam today with monofilament testing; if abnormal, order nerve conduction study and refer podiatry.",
+        "ehr_actions": [
+          { "label": "Document Foot Exam", "type": "flag", "detail": "Diabetic foot exam today — document monofilament, pulses, skin, sensation findings" },
+          { "label": "Order Nerve Conduction", "type": "order", "detail": "NCS/EMG lower extremities — evaluate for peripheral neuropathy" },
+          { "label": "Refer Podiatry", "type": "refer", "detail": "Podiatry referral — diabetic foot care and neuropathy evaluation" }
+        ],
+        "references": [
+          { "title": "ADA Standards of Care — Neuropathy 2025", "source": "American Diabetes Association, 2025", "type": "guideline", "finding": "Annual foot exam with monofilament testing recommended; tight glycemic control is the primary intervention to prevent neuropathy progression." },
+          { "title": "DCCT/EDIC — Neuropathy Prevention", "source": "DCCT Research Group, NEJM, 1993", "type": "rct", "finding": "Intensive glycemic control reduced the risk of clinical neuropathy by 60% compared to conventional treatment over 6 years." }
+        ]
+      },
+      {
+        "priority": "warn",
+        "category": "Cardiovascular",
+        "icon": "🫀",
+        "title": "Uncontrolled BP + LDL Above Goal",
+        "snippet": "BP 152/94 mmHg · LDL 118 mg/dL (goal <70)",
+        "body": "BP of 152/94 exceeds the ACC/AHA target of <130/80 for patients with T2DM and CKD. LDL of 118 mg/dL is well above the <70 mg/dL goal for high-risk diabetes patients on atorvastatin 40mg.",
+        "recommendation": "Uptitrate lisinopril to 20mg for BP; uptitrate atorvastatin to 80mg to reach LDL <70 mg/dL; recheck both in 6 weeks.",
+        "ehr_actions": [
+          { "label": "Uptitrate Lisinopril", "type": "rx", "detail": "Lisinopril increase 10mg → 20mg QD; recheck BP and creatinine in 2 weeks" },
+          { "label": "Uptitrate Atorvastatin", "type": "rx", "detail": "Atorvastatin increase 40mg → 80mg QHS; recheck LDL in 6 weeks" },
+          { "label": "Order Lipid Panel", "type": "order", "detail": "Fasting lipid panel in 6 weeks to assess statin response" }
+        ],
+        "references": [
+          { "title": "ACC/AHA Hypertension Guidelines 2017", "source": "Whelton et al., JACC, 2017", "type": "guideline", "finding": "BP target <130/80 mmHg for adults with diabetes or CKD; combination therapy often required when >20/10 above goal." },
+          { "title": "ADA Cardiovascular Risk Management 2025", "source": "American Diabetes Association, 2025", "type": "guideline", "finding": "LDL goal <70 mg/dL for T2DM with additional CV risk factors; high-intensity statin therapy recommended." }
+        ]
+      },
+      {
+        "priority": "warn",
+        "category": "Screening",
+        "icon": "🔬",
+        "title": "5 Preventive Care Gaps Open",
+        "snippet": "Eye exam 2+ yrs overdue · Colorectal never done · LDCT never done",
+        "body": "Diabetic eye exam is 2+ years overdue (last Mar 2023). Colorectal cancer screening has never been performed at age 64. Lung cancer LDCT is indicated (40 pack-year, quit 2019). PPSV23 is indicated at age 64 with diabetes.",
+        "recommendation": "Refer ophthalmology for diabetic eye exam; order colonoscopy or FIT; order lung LDCT; administer PPSV23 today if available.",
+        "ehr_actions": [
+          { "label": "Refer Ophthalmology", "type": "refer", "detail": "Ophthalmology — diabetic retinopathy screening, 2+ years overdue" },
+          { "label": "Order Colonoscopy", "type": "order", "detail": "Colonoscopy — colorectal cancer screening, never performed, age 64" },
+          { "label": "Order Lung LDCT", "type": "order", "detail": "Low-dose CT chest — lung cancer screening, 40 pk-yr, quit 2019" }
+        ],
+        "references": [
+          { "title": "USPSTF Colorectal Cancer Screening 2021", "source": "USPSTF, 2021", "type": "guideline", "finding": "Colorectal cancer screening recommended for all adults 45–75; colonoscopy or annual FIT are acceptable strategies." },
+          { "title": "USPSTF Lung Cancer Screening 2021", "source": "USPSTF, 2021", "type": "guideline", "finding": "Annual LDCT recommended for adults 50–80 with ≥20 pack-year history who currently smoke or quit within past 15 years." }
+        ]
+      },
+      {
+        "priority": "info",
+        "category": "Social",
+        "icon": "🏠",
+        "title": "SDOH Barriers Affecting Adherence",
+        "snippet": "Transportation barrier · Food insecurity · Lives alone",
+        "body": "Transportation barrier to pharmacy is the likely primary driver of metformin non-adherence and sertraline lapse. Food insecurity may be contributing to glycemic variability. Patient lives alone with limited social support.",
+        "recommendation": "Request mail-delivery pharmacy for all medications; provide food pantry referral; consider social work consult for care coordination support.",
+        "ehr_actions": [
+          { "label": "Refer Social Work", "type": "refer", "detail": "Social work consult — pharmacy transportation barrier, food insecurity, limited social support" },
+          { "label": "Flag SDOH Barriers", "type": "flag", "detail": "SDOH: transportation barrier to pharmacy, food insecurity — mail delivery Rx requested today" }
+        ],
+        "references": [
+          { "title": "SDOH and Medication Adherence in Diabetes", "source": "Berkowitz et al., Diabetes Care, 2018", "type": "cohort", "finding": "Food insecurity and transportation barriers are independently associated with 2× higher rates of medication non-adherence in T2DM." },
+          { "title": "ADA Standards of Care — SDOH 2025", "source": "American Diabetes Association, 2025", "type": "guideline", "finding": "Routine SDOH screening and referral to community resources is recommended as part of comprehensive diabetes management." }
+        ]
+      }
+    ]
+  };
+
+  function runAnalysis() {
     const btn = document.getElementById('reanalyzeBtn');
     btn.disabled = true;
-    btn.textContent = '↻ Analyzing…';
+    btn.textContent = '↻ Loading…';
 
-    // Only show spinner inside popover if it's already open
     if (isOpen) {
       document.getElementById('loadingState').style.display = 'flex';
       document.getElementById('briefingContent').style.display = 'none';
       document.getElementById('briefingContent').innerHTML = '';
     }
 
-    try {
-      const resp = await fetch("https://cold-block-0b01.sydechen.workers.dev/", {
-        method: "POST",
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 8000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: `Patient chart data:\n\n${JSON.stringify(patientData, null, 2)}` }]
-        })
-      });
+    // Short simulated delay so the loading state is visible
+    setTimeout(() => {
+      document.getElementById('alertCount').textContent = STATIC_RESULT.alert_count;
 
-      const data = await resp.json();
-      if (data.error) throw new Error(data.error.message || 'API error');
-      const text = data.content.map(i => i.text || '').join('');
-      const s = text.indexOf('{'), e = text.lastIndexOf('}');
-      if (s === -1 || e === -1) throw new Error('Could not find JSON in response');
-      const result = JSON.parse(text.slice(s, e + 1));
-
-      // Update badge count and signal ready
-      const count = result.alert_count || result.cards.length;
-      document.getElementById('alertCount').textContent = count;
-      // If popover isn't open yet, pulse badge to signal readiness
       if (!isOpen) {
         const badge = document.getElementById('preChartBadge');
         badge.style.animation = 'none';
@@ -1303,17 +1423,11 @@ Rules:
       }
 
       document.getElementById('loadingState').style.display = 'none';
-      renderBriefing(result);
+      renderBriefing(STATIC_RESULT);
 
-    } catch (err) {
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('briefingContent').innerHTML =
-        `<div class="error-state">⚠ Analysis failed: ${err.message}<br><br>Try re-analyzing or check API key.</div>`;
-      document.getElementById('briefingContent').style.display = 'block';
-    }
-
-    btn.disabled = false;
-    btn.textContent = '↻ Re-analyze';
+      btn.disabled = false;
+      btn.textContent = '↻ Re-analyze';
+    }, 800);
   }
 
   // Store rendered card data for pathway lookup
@@ -1344,36 +1458,36 @@ Rules:
 
     // Cards grouped by priority
     const groups = [
-      { key: 'urgent', label: 'Needs Attention' },
-      { key: 'warn',   label: 'Review & Act Today' },
-      { key: 'info',   label: 'Also Address' }
+      { key: 'urgent', label: '🔴 Needs Attention' },
+      { key: 'warn',   label: '🟡 Review & Act Today' },
+      { key: 'info',   label: '🔵 Also Address' }
     ];
 
     groups.forEach(g => {
       const cards = (data.cards || []).filter(c => c.priority === g.key);
       if (!cards.length) return;
-      html += `<div class="section-divider ${g.key}">${g.label}</div>`;
+      html += `<div class="section-divider">${g.label}</div>`;
       cards.forEach((card, i) => {
         const cardIdx = `${g.key}_${i}`;
 
         const firstAction = card.ehr_actions?.[0];
         const quickBtnHtml = firstAction ? `<button class="card-quick-action ${firstAction.type}" id="quick_${cardIdx}_0"
           onclick="event.stopPropagation();quickAction(this,'${cardIdx}','${(firstAction.detail||'').replace(/'/g,'&#39;')}','${firstAction.type}','${(firstAction.label||'').replace(/'/g,'&#39;')}')"
-        >${firstAction.label}</button>` : '';
+        >${actionIcon(firstAction.type)} ${firstAction.label}</button>` : '';
 
         const actBtns = (card.ehr_actions || []).map((a, ai) => {
           const detail = (a.detail || '').replace(/'/g, '&#39;');
           const label = (a.label || '').replace(/'/g, '&#39;');
           return `<button class="ehr-action-btn ${a.type}" id="full_${cardIdx}_${ai}"
             onclick="ehrAction(this,'${cardIdx}_${ai}','${detail}','${a.type}','${label}')"
-          >${a.label}</button>`;
+          >${actionIcon(a.type)} ${a.label}</button>`;
         }).join('');
 
         // References
         const refs = (card.references || []);
         const refsHtml = refs.length ? `
           <button class="ref-toggle" id="reftog_${cardIdx}" onclick="toggleRefs('${cardIdx}')">
-            <span>${refs.length} reference${refs.length > 1 ? 's' : ''}</span>
+            <span>📚 ${refs.length} reference${refs.length > 1 ? 's' : ''}</span>
             <span class="ref-toggle-arrow">▼</span>
           </button>
           <div class="ref-drawer" id="refdrawer_${cardIdx}">
@@ -1388,21 +1502,21 @@ Rules:
                   </div>
                 </li>`).join('')}
             </ul>
-            ${card.pathway ? `<button class="pathway-btn" onclick="openPathway('${cardIdx}')">View Clinical Pathway</button>` : ''}
+            ${card.pathway ? `<button class="pathway-btn" onclick="openPathway('${cardIdx}')">🌳 View Clinical Pathway</button>` : ''}
           </div>` : '';
 
         html += `<div class="priority-card ${card.priority}" id="card_${cardIdx}">
           <div class="card-row" onclick="toggleCard('${cardIdx}')">
-            <div class="card-row-top">
+            <div class="card-stripe"></div>
+            <span class="card-row-icon">${card.icon}</span>
+            <div class="card-row-main">
               <div class="card-row-title">${card.title}</div>
-              <div class="card-row-right-top">
-                <span class="card-category ${card.priority}">${card.category}</span>
-                <span class="card-chevron">▼</span>
-              </div>
-            </div>
-            <div class="card-row-bottom">
               <div class="card-row-snippet">${card.snippet || card.body?.split('.')[0] || ''}</div>
+            </div>
+            <div class="card-row-right">
+              <span class="card-category ${card.priority}">${card.category}</span>
               ${quickBtnHtml}
+              <span class="card-chevron">▼</span>
             </div>
           </div>
           <div class="card-detail">
